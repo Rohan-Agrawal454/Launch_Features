@@ -1,0 +1,17 @@
+{
+    "redirects": [
+      {
+        "source": "/redirect",
+        "destination": "/redirect/success",
+        "statusCode": 308
+      }
+    ],
+    "rewrites": [
+      {
+        "source": "/rewrite",
+        "destination": "/rewrite/success"
+    }
+  ]
+}
+  
+
