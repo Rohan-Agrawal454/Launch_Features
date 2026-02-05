@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///Users/rohan.agrawal/Desktop/launch%20team/Launch_Features/app/page.tsx"],"sourcesContent":["export default function Home() {\n  return (\n    <div className=\"min-h-screen bg-gradient-to-br\">\n      <main className=\"container mx-auto px-4 py-16\">\n        <div className=\"max-w-4xl mx-auto\">\n          {/* Header */}\n          <header className=\"text-center mb-16\">\n            <h1 className=\"text-5xl font-bold text-gray-900 dark:text-white mb-4\">\n              Contentstack Launch Test\n            </h1>\n            <p className=\"text-xl text-gray-600 dark:text-gray-300\">\n              A minimal Next.js app for testing Contentstack Launch features\n            </p>\n          </header>\n        </div>\n      </main>\n    </div>\n  );\n}\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,qBACE,8OAAC;QAAI,WAAU;kBACb,cAAA,8OAAC;YAAK,WAAU;sBACd,cAAA,8OAAC;gBAAI,WAAU;0BAEb,cAAA,8OAAC;oBAAO,WAAU;;sCAChB,8OAAC;4BAAG,WAAU;sCAAwD;;;;;;sCAGtE,8OAAC;4BAAE,WAAU;sCAA2C;;;;;;;;;;;;;;;;;;;;;;;;;;;AAQpE"}}]
+}
