@@ -11,7 +11,14 @@
         "source": "/rewrite",
         "destination": "/rewrite/success"
     }
-  ]
+    ],
+    "cache": {
+        "cachePriming": {
+            "urls": [
+                "/"
+            ]
+        }
+    }
 }
   
 
