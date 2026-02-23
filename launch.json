@@ -4,13 +4,21 @@
         "source": "/redirect",
         "destination": "/redirect/success",
         "statusCode": 308
+      },
+      {
+        "source": "/new_redirect",
+        "destination": "https://launchassignment-b6f4d9.contentstackapps.com"
       }
     ],
     "rewrites": [
       {
         "source": "/rewrite",
         "destination": "/rewrite/success"
-    }
+      },
+      {
+        "source": "/new_rewrite",
+        "destination": "https://launchassignment-b6f4d9.contentstackapps.com"
+      }
     ],
     "cache": {
         "cachePriming": {
