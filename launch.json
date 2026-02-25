@@ -16,6 +16,10 @@
         "destination": "/rewrite/success"
       },
       {
+        "source": "/rewrite1",
+        "destination": "/rewrite/success"
+      },
+      {
         "source": "/new_rewrite",
         "destination": "https://launchassignment-b6f4d9.contentstackapps.com"
       }
