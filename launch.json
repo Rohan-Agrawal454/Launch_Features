@@ -17,7 +17,7 @@
       },
       {
         "source": "/rewrite1",
-        "destination": "/rewrite/success"
+        "destination": "/new_rewrite"
       },
       {
         "source": "/new_rewrite",
