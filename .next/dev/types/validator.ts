@@ -128,6 +128,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/api/reproduce-large-log/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/reproduce-large-log">> = Specific
+  const handler = {} as typeof import("../../../app/api/reproduce-large-log/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/reproduce-telemetry-kafka/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/reproduce-telemetry-kafka">> = Specific
+  const handler = {} as typeof import("../../../app/api/reproduce-telemetry-kafka/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 
 
 

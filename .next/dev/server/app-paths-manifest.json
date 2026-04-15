@@ -1,4 +1,4 @@
 {
-  "/api/log-bulk-requests/route": "app/api/log-bulk-requests/route.js",
-  "/api/log-bulk/route": "app/api/log-bulk/route.js"
+  "/api/reproduce-telemetry-kafka/route": "app/api/reproduce-telemetry-kafka/route.js",
+  "/page": "app/page.js"
 }
