@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+/** Node runtime: real stdout lines; one request can still batch—use `/log-bulk-requests` for N HTTP calls. */
+export const runtime = "nodejs";
+
 const LOREM_BASE =
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ";
 
@@ -14,11 +17,28 @@ function parsePositiveInt(param: string | null, defaultValue: number): number {
   return Number.isFinite(n) && n > 0 ? n : defaultValue;
 }
 
+function writeStdoutLine(line: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    process.stdout.write(line + "\n", (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
+function markersForIndex(i: number) {
+  return {
+    start: `log-starter-count${i} `,
+    end: ` log-end-count${i}`,
+  };
+}
+
 /**
- * GET /api/log-bulk?count=<n>&sizeKb=<k>
- * Emits `count` separate console.log lines. Each line is ~`sizeKb` KiB (UTF-8 bytes for ASCII lorem),
- * wrapped with log-starter-count{i} … log-end-count{i}.
- * Defaults: count=1, sizeKb=1
+ * GET /api/log-bulk?count=<n>&sizeKb=<k>&startIndex=<s>
+ * Emits `count` stdout lines. Index in markers runs from `startIndex` … `startIndex + count - 1`.
+ * For **one log per HTTP request** (better for Kafka), call with `count=1` and vary `startIndex`,
+ * or use the UI at `/log-bulk-requests`.
+ * Defaults: count=1, sizeKb=1, startIndex=1
  */
 export async function GET(request: NextRequest) {
   const count = parsePositiveInt(
@@ -29,33 +49,36 @@ export async function GET(request: NextRequest) {
     request.nextUrl.searchParams.get("sizeKb"),
     1
   );
+  const startIndex = parsePositiveInt(
+    request.nextUrl.searchParams.get("startIndex"),
+    1
+  );
 
   const targetBytes = sizeKb * 1024;
   let totalCharsLogged = 0;
 
-  for (let i = 1; i <= count; i++) {
-    const start = ` log-starter-count${i} `;
-    const end = ` log-end-count${i} `;
+  for (let j = 0; j < count; j++) {
+    const i = startIndex + j;
+    const { start, end } = markersForIndex(i);
     const overhead = start.length + end.length;
     const loremLen = Math.max(0, targetBytes - overhead);
     let line = `${start}${buildLoremIpsum(loremLen)}${end}`;
     if (line.length > targetBytes) {
       line = line.slice(0, targetBytes);
     }
-    console.log(line);
+    await writeStdoutLine(line);
     totalCharsLogged += line.length + 1;
   }
 
-  const firstStart = ` log-starter-count1 `;
-  const firstEnd = ` log-end-count1 `;
+  const { start: firstStart, end: firstEnd } = markersForIndex(startIndex);
   const firstOverhead = firstStart.length + firstEnd.length;
   const firstLorem = Math.max(0, targetBytes - firstOverhead);
   const firstLine = `${firstStart}${buildLoremIpsum(firstLorem)}${firstEnd}`;
   const firstPreview =
     firstLine.slice(0, 200) + (firstLine.length > 200 ? "…" : "");
 
-  const lastStart = ` log-starter-count${count} `;
-  const lastEnd = ` log-end-count${count} `;
+  const lastIndex = startIndex + count - 1;
+  const { start: lastStart, end: lastEnd } = markersForIndex(lastIndex);
   const lastOverhead = lastStart.length + lastEnd.length;
   const lastLorem = Math.max(0, targetBytes - lastOverhead);
   const lastLine = `${lastStart}${buildLoremIpsum(lastLorem)}${lastEnd}`;
@@ -64,6 +87,8 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     count,
+    startIndex,
+    lastIndex,
     sizeKb,
     targetBytesPerLog: targetBytes,
     totalLogsEmitted: count,
@@ -71,5 +96,7 @@ export async function GET(request: NextRequest) {
     markerPattern: "log-starter-count{n} … log-end-count{n}",
     previewFirstLog: firstPreview,
     previewLastLog: count > 1 ? lastPreview : undefined,
+    hint:
+      "For one Kafka record per log, open /log-bulk-requests or call this URL once per index with count=1.",
   });
 }

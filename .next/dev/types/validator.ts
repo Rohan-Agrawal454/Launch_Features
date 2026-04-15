@@ -47,6 +47,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 }
 
 
+// Validate ../../../app/log-bulk-requests/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/log-bulk-requests">> = Specific
+  const handler = {} as typeof import("../../../app/log-bulk-requests/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/new_rewrite/page.tsx
 {
   type __IsExpected<Specific extends AppPageConfig<"/new_rewrite">> = Specific
@@ -78,6 +87,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends AppPageConfig<"/rewrite/success">> = Specific
   const handler = {} as typeof import("../../../app/rewrite/success/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/log-bulk-requests/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/log-bulk-requests">> = Specific
+  const handler = {} as typeof import("../../../app/api/log-bulk-requests/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
