@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-/** Default body length that tends to exceed typical ~1MB Kafka limits after your log pipeline encodes this line. */
 const DEFAULT_BODY_CHARS = 1_100_000;
 
 function writeStdoutLine(line: string): Promise<void> {
@@ -17,11 +16,8 @@ function writeStdoutLine(line: string): Promise<void> {
 /**
  * GET/POST /api/reproduce-telemetry-kafka?size=1100000
  *
- * Builds the same OTLP-shaped JSON as `test2.js` (one huge `body.stringValue`) and writes **one line**
- * to **application stdout** — no outbound telemetry HTTP call. Your log collector → Kafka path can
- * surface "Message was too large" / Failed to send kafkaMessage when this line is ingested.
- *
- * HTTP response is small metadata only (the giant payload is not returned in the body).
+ * Writes one stdout line consisting only of `size` repeated ASCII characters (no OTLP wrapper).
+ * HTTP response is small metadata only.
  */
 export async function GET(request: NextRequest) {
   return handle(request);
@@ -39,43 +35,21 @@ async function handle(request: NextRequest) {
 
   if (!Number.isFinite(bodyChars) || bodyChars <= 0) {
     return NextResponse.json(
-      { error: "Invalid `size` (positive integer, character count for body.stringValue)." },
+      { error: "Invalid `size` (positive integer, character count for the log line)." },
       { status: 400 }
     );
   }
 
-  const record = {
-    resourceLogs: [
-      {
-        resource: {},
-        scopeLogs: [
-          {
-            scope: {},
-            logRecords: [
-              {
-                timeUnixNano: String(Date.now() * 1_000_000),
-                severityNumber: 9,
-                severityText: "INFO",
-                body: { stringValue: "x".repeat(bodyChars) },
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  };
-
-  const line = JSON.stringify(record);
-  const jsonPayloadBytes = Buffer.byteLength(line, "utf8");
+  const line = "x".repeat(bodyChars);
+  const lineBytes = Buffer.byteLength(line, "utf8");
 
   await writeStdoutLine(line);
 
   return NextResponse.json({
     ok: true,
     mode: "stdout",
-    message:
-      "Emitted one OTLP-shaped JSON line to stdout (same shape as test2.js). Check collector/Kafka logs for oversized message errors.",
+    message: "Emitted one raw log line (x repeated `size` times).",
     bodyChars,
-    jsonPayloadBytes,
+    lineBytes,
   });
 }
