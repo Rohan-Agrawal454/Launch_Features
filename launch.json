@@ -8,6 +8,14 @@
       {
         "source": "/new_redirect",
         "destination": "https://launchassignment-b6f4d9.contentstackapps.com"
+      },
+      {
+        "source": "/",
+        "destination": "/error"
+      },
+      {
+        "source": "/error",
+        "destination": "/"
       }
     ],
     "rewrites": [
