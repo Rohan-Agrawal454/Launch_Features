@@ -15,7 +15,8 @@ export async function GET(request: NextRequest) {
       success: true,
       message: 'Query parameters retrieved successfully',
       params: params,
-      url: request.url,
+      requestPath: request.nextUrl.pathname + request.nextUrl.search,
+      fullUrl: request.url,
       timestamp: new Date().toISOString(),
     });
 

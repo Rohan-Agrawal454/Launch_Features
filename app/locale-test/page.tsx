@@ -6,7 +6,8 @@ interface ApiResponse {
   success: boolean;
   message: string;
   params: Record<string, string>;
-  url: string;
+  requestPath: string;
+  fullUrl: string;
   timestamp: string;
   error?: string;
 }
@@ -105,8 +106,13 @@ export default function LocaleTestPage() {
                 </div>
                 
                 <div>
-                  <span className="font-medium text-green-700">URL:</span>
-                  <span className="ml-2 text-green-600 break-all">{response.url}</span>
+                  <span className="font-medium text-green-700">Request Path:</span>
+                  <span className="ml-2 text-green-600 break-all font-mono">{response.requestPath}</span>
+                </div>
+                
+                <div>
+                  <span className="font-medium text-green-700">Full URL:</span>
+                  <span className="ml-2 text-green-600 break-all text-sm">{response.fullUrl}</span>
                 </div>
                 
                 <div>
