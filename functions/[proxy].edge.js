@@ -1,14 +1,17 @@
 export default function handler(request) {
     const parsedUrl = new URL(request.url);
     const route = parsedUrl.pathname;
-    
+
+    console.log('[proxy.edge]', request.method, route, parsedUrl.search || '');
+
     if (route === '/edge') {
       const response = {
         time: new Date()
-      }
-      return new Response(JSON.stringify(response))
+      };
+      console.log('[proxy.edge] /edge json response');
+      return new Response(JSON.stringify(response));
     }
-    
+
     if (route === '/edge/geo') {
       // Extract geo headers from request
       const geoHeaders = {
@@ -16,7 +19,9 @@ export default function handler(request) {
         region: request.headers.get('visitor-ip-region') || '',
         city: request.headers.get('visitor-ip-city') || ''
       };
-      
+
+      console.log('[proxy.edge] /edge/geo', geoHeaders);
+
       return new Response(JSON.stringify({
         country: geoHeaders.country,
         region: geoHeaders.region,
@@ -49,7 +54,13 @@ export default function handler(request) {
       };
 
       const locale = getLocaleFromCountry(country);
-      
+
+      console.log('[proxy.edge] locale route', {
+        route,
+        country,
+        locale,
+      });
+
       // Create a new URL with the locale parameter added
       const newUrl = new URL(request.url);
       
@@ -72,14 +83,17 @@ export default function handler(request) {
 
       // For API calls, we want to continue to the actual API
       if (route === '/api/locale-params') {
+        console.log('[proxy.edge] fetch modifiedRequest (api/locale-params)', newUrl.toString());
         return fetch(modifiedRequest);
       }
-      
+
       // For the page route, continue to Next.js with the modified request
+      console.log('[proxy.edge] fetch modifiedRequest (locale-test)', newUrl.toString());
       return fetch(modifiedRequest);
     }
-    
-    return fetch(request)
+
+    console.log('[proxy.edge] passthrough fetch', request.url);
+    return fetch(request);
 }
 
 
