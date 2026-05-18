@@ -1,15 +1,17 @@
-export default function handler(request) {
+export default async function handler(request) {
     const parsedUrl = new URL(request.url);
     const route = parsedUrl.pathname;
 
-    console.log('[proxy.edge]', request.method, route, parsedUrl.search || '');
+    const reqBody = await request.clone().text();
+    console.log('[proxy.edge] req body', reqBody);
 
     if (route === '/edge') {
       const response = {
         time: new Date()
       };
-      console.log('[proxy.edge] /edge json response');
-      return new Response(JSON.stringify(response));
+      const resBody = JSON.stringify(response);
+      console.log('[proxy.edge] res body', resBody);
+      return new Response(resBody);
     }
 
     if (route === '/edge/geo') {
@@ -20,14 +22,14 @@ export default function handler(request) {
         city: request.headers.get('visitor-ip-city') || ''
       };
 
-      console.log('[proxy.edge] /edge/geo', geoHeaders);
-
-      return new Response(JSON.stringify({
+      const resBody = JSON.stringify({
         country: geoHeaders.country,
         region: geoHeaders.region,
         city: geoHeaders.city,
         timestamp: new Date().toISOString(),
-      }), {
+      });
+      console.log('[proxy.edge] res body', resBody);
+      return new Response(resBody, {
         headers: {
           "content-type": "application/json",
           "Cache-Control": "no-store, max-age=0"
@@ -55,12 +57,6 @@ export default function handler(request) {
 
       const locale = getLocaleFromCountry(country);
 
-      console.log('[proxy.edge] locale route', {
-        route,
-        country,
-        locale,
-      });
-
       // Create a new URL with the locale parameter added
       const newUrl = new URL(request.url);
       
@@ -83,17 +79,23 @@ export default function handler(request) {
 
       // For API calls, we want to continue to the actual API
       if (route === '/api/locale-params') {
-        console.log('[proxy.edge] fetch modifiedRequest (api/locale-params)', newUrl.toString());
-        return fetch(modifiedRequest);
+        const res = await fetch(modifiedRequest);
+        const resBody = await res.clone().text();
+        console.log('[proxy.edge] res body', resBody);
+        return res;
       }
 
       // For the page route, continue to Next.js with the modified request
-      console.log('[proxy.edge] fetch modifiedRequest (locale-test)', newUrl.toString());
-      return fetch(modifiedRequest);
+      const resLocale = await fetch(modifiedRequest);
+      const resBodyLocale = await resLocale.clone().text();
+      console.log('[proxy.edge] res body', resBodyLocale);
+      return resLocale;
     }
 
-    console.log('[proxy.edge] passthrough fetch', request.url);
-    return fetch(request);
+    const resPass = await fetch(request);
+    const resBodyPass = await resPass.clone().text();
+    console.log('[proxy.edge] res body', resBodyPass);
+    return resPass;
 }
 
 
