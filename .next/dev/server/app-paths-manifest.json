@@ -1,5 +1,4 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
   "/api/buffered/route": "app/api/buffered/route.js",
   "/api/streaming/route": "app/api/streaming/route.js",
   "/page": "app/page.js",
