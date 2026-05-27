@@ -1,5 +1,6 @@
 {
   "/api/buffered/route": "app/api/buffered/route.js",
+  "/api/lorem/route": "app/api/lorem/route.js",
   "/api/streaming/route": "app/api/streaming/route.js",
   "/page": "app/page.js",
   "/streaming/page": "app/streaming/page.js"

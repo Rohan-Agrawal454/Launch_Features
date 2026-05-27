@@ -20,12 +20,14 @@ function safeJsonParse(s: string): unknown {
   }
 }
 
-type Mode = "streaming" | "buffered";
+type Mode = "streaming" | "buffered" | "lorem";
 
 export default function StreamingPage() {
   const [mode, setMode] = useState<Mode>("streaming");
   const [count, setCount] = useState(20);
   const [intervalMs, setIntervalMs] = useState(250);
+  const [wordCount, setWordCount] = useState(100);
+  const [loremText, setLoremText] = useState<string | null>(null);
   const [connected, setConnected] = useState(false);
   const [events, setEvents] = useState<StreamEvent[]>([]);
   const [busy, setBusy] = useState(false);
@@ -56,6 +58,7 @@ export default function StreamingPage() {
   function connectStreaming() {
     disconnect();
     setEvents([]);
+    setLoremText(null);
 
     const url = buildUrl("/api/streaming");
     const es = new EventSource(url);
@@ -81,9 +84,56 @@ export default function StreamingPage() {
     });
   }
 
+  async function runLorem() {
+    disconnect();
+    setEvents([]);
+    setLoremText(null);
+    setBusy(true);
+    pushEvent({ type: "open", data: { ok: true }, at: nowIso() });
+
+    try {
+      const u = new URL("/api/lorem", window.location.origin);
+      u.searchParams.set("words", String(wordCount));
+      const res = await fetch(u.toString(), { method: "GET" });
+      const body = (await res.json()) as {
+        ok: boolean;
+        words?: number;
+        text?: string;
+        charCount?: number;
+        error?: string;
+      };
+
+      if (!res.ok || !body.ok) {
+        pushEvent({
+          type: "error",
+          data: body?.error ? String(body.error) : `HTTP ${res.status}`,
+          at: nowIso(),
+        });
+        return;
+      }
+
+      setLoremText(body.text ?? "");
+      pushEvent({
+        type: "message",
+        data: { words: body.words, charCount: body.charCount },
+        at: nowIso(),
+      });
+      pushEvent({ type: "done", data: { done: true }, at: nowIso() });
+    } catch (e) {
+      pushEvent({
+        type: "error",
+        data: e instanceof Error ? e.message : String(e),
+        at: nowIso(),
+      });
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function runBuffered() {
     disconnect();
     setEvents([]);
+    setLoremText(null);
     setBusy(true);
     pushEvent({ type: "open", data: { ok: true }, at: nowIso() });
 
@@ -129,8 +179,9 @@ export default function StreamingPage() {
       <div className="mx-auto max-w-3xl rounded-lg border border-zinc-200 bg-white p-6 shadow-sm">
         <h1 className="text-xl font-semibold">Response mode demo</h1>
         <p className="mt-2 text-sm text-zinc-600">
-          Pick <code className="rounded bg-zinc-100 px-1">Streaming</code> (SSE) or{" "}
-          <code className="rounded bg-zinc-100 px-1">Buffered</code> (normal JSON) and click Run.
+          Pick <code className="rounded bg-zinc-100 px-1">Streaming</code> (SSE),{" "}
+          <code className="rounded bg-zinc-100 px-1">Buffered</code> (normal JSON), or{" "}
+          <code className="rounded bg-zinc-100 px-1">Lorem ipsum</code> and click Run.
         </p>
 
         <div className="mt-6 grid gap-4">
@@ -153,38 +204,65 @@ export default function StreamingPage() {
               />
               Buffered
             </label>
+            <label className="flex items-center gap-2 text-sm font-medium">
+              <input
+                type="radio"
+                name="mode"
+                checked={mode === "lorem"}
+                onChange={() => setMode("lorem")}
+              />
+              Lorem ipsum
+            </label>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {mode === "lorem" ? (
             <label className="block text-sm font-medium">
-              Count
+              Word count
               <input
                 type="number"
                 min={1}
-                max={10000}
+                max={100000}
                 className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
-                value={count}
-                onChange={(e) => setCount(Number(e.target.value) || 1)}
+                value={wordCount}
+                onChange={(e) => setWordCount(Number(e.target.value) || 1)}
               />
             </label>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label className="block text-sm font-medium">
+                Count
+                <input
+                  type="number"
+                  min={1}
+                  max={10000}
+                  className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
+                  value={count}
+                  onChange={(e) => setCount(Number(e.target.value) || 1)}
+                />
+              </label>
 
-            <label className="block text-sm font-medium">
-              Interval (ms)
-              <input
-                type="number"
-                min={50}
-                max={60000}
-                className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
-                value={intervalMs}
-                onChange={(e) => setIntervalMs(Number(e.target.value) || 250)}
-              />
-            </label>
-          </div>
+              <label className="block text-sm font-medium">
+                Interval (ms)
+                <input
+                  type="number"
+                  min={50}
+                  max={60000}
+                  className="mt-1 w-full rounded border border-zinc-300 px-3 py-2"
+                  value={intervalMs}
+                  onChange={(e) => setIntervalMs(Number(e.target.value) || 250)}
+                />
+              </label>
+            </div>
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
               type="button"
-              onClick={() => (mode === "streaming" ? connectStreaming() : void runBuffered())}
+              onClick={() => {
+                if (mode === "streaming") connectStreaming();
+                else if (mode === "buffered") void runBuffered();
+                else void runLorem();
+              }}
               disabled={busy || (mode === "streaming" && connected)}
               className="w-full rounded bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 sm:w-auto"
             >
@@ -207,6 +285,18 @@ export default function StreamingPage() {
             </button>
           </div>
         </div>
+
+        {mode === "lorem" && loremText !== null && (
+          <div className="mt-6">
+            <h2 className="text-sm font-semibold text-zinc-800">Lorem ipsum response</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              {wordCount} words · {loremText.length} characters
+            </p>
+            <div className="mt-2 max-h-[30vh] overflow-auto rounded border border-zinc-200 bg-zinc-50 p-3 text-sm leading-relaxed text-zinc-800">
+              {loremText}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6">
           <div className="flex items-center justify-between">
