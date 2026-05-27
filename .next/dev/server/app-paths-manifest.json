@@ -1,4 +1,7 @@
 {
-  "/api/reproduce-telemetry-kafka/route": "app/api/reproduce-telemetry-kafka/route.js",
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/buffered/route": "app/api/buffered/route.js",
+  "/api/streaming/route": "app/api/streaming/route.js",
+  "/page": "app/page.js",
+  "/streaming/page": "app/streaming/page.js"
 }

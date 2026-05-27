@@ -92,6 +92,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/streaming/page.tsx
+{
+  type __IsExpected<Specific extends AppPageConfig<"/streaming">> = Specific
+  const handler = {} as typeof import("../../../app/streaming/page.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/buffered/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/buffered">> = Specific
+  const handler = {} as typeof import("../../../app/api/buffered/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/api/log-bulk-requests/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/log-bulk-requests">> = Specific
@@ -141,6 +159,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/reproduce-telemetry-kafka">> = Specific
   const handler = {} as typeof import("../../../app/api/reproduce-telemetry-kafka/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/streaming/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/streaming">> = Specific
+  const handler = {} as typeof import("../../../app/api/streaming/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
