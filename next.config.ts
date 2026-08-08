@@ -7,6 +7,11 @@ const projectRoot = path.dirname(fileURLToPath(import.meta.url));
 
 const nextConfig: NextConfig = {
   /* config options here */
+  /** Pins the workspace root so an unrelated package.json/lockfile in a parent
+   * directory (e.g. the user's home dir) doesn't get picked as root, which breaks
+   * tailwindcss/postcss plugin resolution. turbopack.root below covers Turbopack;
+   * this covers the webpack-based postcss plugin resolution path. */
+  outputFileTracingRoot: projectRoot,
   images: {
     remotePatterns: [
       {
